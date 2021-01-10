@@ -74,27 +74,32 @@ async function delay(ms) {
 
 // This async function controls the flow of the race, add the logic and error handling
 async function handleCreateRace() {
-	// render starting UI
-	renderAt('#race', renderRaceStartView())
-
-	// Get player_id and track_id from the store
-	const { player_id, track_id } = store;
-
-	// invoke the API call to create the race, then save the result
-    const race = await createRace(player_id, track_id);
-
-	// update the store with the race id
-	// decrementing race_id by 1 since server counts by array index
-    store.race_id = race.ID - 1;
-
-	// The race has been created, now start the countdown
-	// call the async function runCountdown
-    await runCountdown();
-
-	// call the async function startRace
-    await startRace(store.race_id);
-    // call the async function runRace
-    runRace(store.race_id);
+	if (store.player_id && store.track_id) {
+		// render starting UI
+		renderAt('#race', renderRaceStartView())
+	
+		// Get player_id and track_id from the store
+		const { player_id, track_id } = store;
+	
+		// invoke the API call to create the race, then save the result
+		const race = await createRace(player_id, track_id);
+	
+		// update the store with the race id
+		// decrementing race_id by 1 since server counts by array index
+		store.race_id = race.ID - 1;
+	
+		// The race has been created, now start the countdown
+		// call the async function runCountdown
+		await runCountdown();
+	
+		// call the async function startRace
+		await startRace(store.race_id);
+		// call the async function runRace
+		runRace(store.race_id);
+	} else {
+		// if user starts race without selecting both racer and track, alert the user
+		alert('You must select both the racer and the track in order to start the race!');
+	}
 }
 
 function runRace(raceID) {
