@@ -397,6 +397,5 @@ function accelerate(id) {
 		...defaultFetchOpts(),
 		body: ''
 	})
-	// .then(res => res.json())
 	.catch(err => console.log("Problem with accelerate request::", err))
 }
