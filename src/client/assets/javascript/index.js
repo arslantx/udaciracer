@@ -1,7 +1,7 @@
 // PROVIDED CODE BELOW (LINES 1 - 80) DO NOT REMOVE
 
 // The store will hold all information needed globally
-var store = {
+let store = {
 	track_id: undefined,
 	player_id: undefined,
 	race_id: undefined,
@@ -34,15 +34,21 @@ async function onPageLoad() {
 
 function setupClickHandlers() {
 	document.addEventListener('click', function(event) {
-		const { target } = event
+		let { target } = event
 
 		// Race track form field
-		if (target.matches('.card.track')) {
+		if (target.matches('.card.track') || target.parentNode.matches('.card.track')) {
+			if (target.parentNode.matches('.card.track')) { 
+				target = target.parentNode;
+			}
 			handleSelectTrack(target)
 		}
 
 		// Podracer form field
-		if (target.matches('.card.podracer')) {
+		if (target.matches('.card.podracer') || target.parentNode.matches('.card.podracer')) {
+			if (target.parentNode.matches('.card.podracer')) { 
+				target = target.parentNode;
+			}
 			handleSelectPodRacer(target)
 		}
 
@@ -74,31 +80,42 @@ async function delay(ms) {
 
 // This async function controls the flow of the race, add the logic and error handling
 async function handleCreateRace() {
-	if (store.player_id && store.track_id) {
-		// render starting UI
-		renderAt('#race', renderRaceStartView())
-	
-		// Get player_id and track_id from the store
-		const { player_id, track_id } = store;
-	
-		// invoke the API call to create the race, then save the result
-		const race = await createRace(player_id, track_id);
-	
-		// update the store with the race id
-		// decrementing race_id by 1 since server counts by array index
-		store.race_id = race.ID - 1;
-	
-		// The race has been created, now start the countdown
-		// call the async function runCountdown
-		await runCountdown();
-	
-		// call the async function startRace
-		await startRace(store.race_id);
-		// call the async function runRace
-		runRace(store.race_id);
-	} else {
-		// if user starts race without selecting both racer and track, alert the user
-		alert('You must select both the racer and the track in order to start the race!');
+	try {
+		if (store.player_id && store.track_id) {
+			// render starting UI
+			renderAt('#race', renderRaceStartView())
+
+			// hide Accelerator button until countdown is finished
+			document.getElementById('gas-peddle').style.display = 'none';
+		
+			// Get player_id and track_id from the store
+			const { player_id, track_id } = store;
+		
+			// invoke the API call to create the race, then save the result
+			const race = await createRace(player_id, track_id);
+		
+			// update the store with the race id
+			// decrementing race_id by 1 since server counts by array index
+			store.race_id = race.ID - 1;
+		
+			// The race has been created, now start the countdown
+			// call the async function runCountdown
+			await runCountdown();
+		
+			// call the async function startRace
+			await startRace(store.race_id);
+
+			// show back Accelerator pedal since race now started
+			document.getElementById('gas-peddle').style.display = 'inline-block';
+			
+			// call the async function runRace
+			runRace(store.race_id);
+		} else {
+			// if user starts race without selecting both racer and track, alert the user
+			alert('You must select both the racer and the track in order to start the race!');
+		}
+	} catch (error) {
+		console.log(error);
 	}
 }
 
